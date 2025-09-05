@@ -30,7 +30,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="text-center">
-      <p>กำลังโหลดข้อมูล...</p>
+      <p>loading data...</p>
     </div>
 
     <!-- Error -->
