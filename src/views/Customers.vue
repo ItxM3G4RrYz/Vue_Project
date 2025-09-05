@@ -53,7 +53,7 @@ export default {
     // ฟังก์ชันดึงข้อมูลจาก API ด้วย GET
     const fetchCustomers = async () => {
       try {
-        const response = await fetch("http://localhost/project_41970137_vues/php_api/show_customer.php", {
+        const response = await fetch("http://localhost/67713669/api_php/show_customers.php", {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
