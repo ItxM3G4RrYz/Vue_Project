@@ -22,12 +22,12 @@ try {
             $stmt->bindParam(':password', $hashedPassword);
 
             if ($stmt->execute()) {
-                echo json_encode(["success" => true, "message" => "ลงทะเบียนสำเร็จ"]);
+                echo json_encode(["success" => true, "message" => "Sign in successful"]);
             } else {
-                echo json_encode(["success" => false, "message" => "เกิดข้อผิดพลาดในการบันทึก"]);
+                echo json_encode(["success" => false, "message" => "Failed to sign in"]);
             }
         } else {
-            echo json_encode(["success" => false, "message" => "กรุณากรอกข้อมูลให้ครบถ้วน"]);
+            echo json_encode(["success" => false, "message" => "Please provide all required fields"]);
         }
     } else {
         echo json_encode(["success" => false, "message" => "Method not allowed"]);
