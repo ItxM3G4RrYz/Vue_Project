@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-4">
-    <h2 class="mb-3">รายชื่อลูกค้า</h2>
+    <h2 class="mb-3">Customers List</h2>
     
     <div class="mb-3">
       <a class="btn btn-primary" href="/add_customer" role="button">Add+</a>
@@ -11,10 +11,10 @@
       <thead class="table-primary">
         <tr>
           <th>ID</th>
-          <th>ชื่อ</th>
-          <th>นามสกุล</th>
-          <th>เบอร์โทร</th>
-          <th>ชื่อผู้ใช้</th>
+          <th>FirstName</th>
+          <th>lastName</th>
+          <th>Phone.</th>
+          <th>UserName</th>
         </tr>
       </thead>
       <tbody>

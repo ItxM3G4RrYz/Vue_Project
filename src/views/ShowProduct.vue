@@ -1,6 +1,6 @@
 <template>
   <div class="container my-5">
-    <h2 class="text-center mb-4">รายการสินค้า</h2>
+    <h2 class="text-center mb-4">ProductList</h2>
     <div class="row">
       <div class="col-md-4" v-for="product in products" :key="product.id">
         <div class="card shadow-sm mb-4">
