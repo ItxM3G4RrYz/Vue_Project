@@ -1,14 +1,14 @@
 <template>
   <div class="container my-5">
-    <h2 class="text-center mb-4">ProductList</h2>
+    <h2 class="text-center mb-4">List</h2>
     <div class="row">
       <div class="col-md-4" v-for="product in products" :key="product.id">
         <div class="card shadow-sm mb-4">
           <img :src="product.image" class="card-img-top" :alt="product.name">
           <div class="card-body text-center">
             <h5 class="card-title">{{ product.name }}</h5>
-            <p class="card-text">{{ product.price }} บาท</p>
-            <button class="btn btn-primary">รายละเอียด</button>
+            <p class="card-text">{{ product.price }} THB</p>
+            <button class="btn btn-primary">Details</button>
           </div>
         </div>
       </div>

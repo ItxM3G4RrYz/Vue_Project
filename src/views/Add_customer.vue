@@ -61,7 +61,7 @@ export default {
         }
 
       } catch (err) {
-        this.message = "เกิดข้อผิดพลาด: " + err.message;
+        this.message = "Something went wrong: " + err.message;
       }
     }
   }

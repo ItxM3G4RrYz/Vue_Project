@@ -12,7 +12,7 @@
             Login
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/about">Login</a></li>
+            <li><a class="dropdown-item" href="/login">Login</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/add_customer">Sign In</a></li>
           </ul>
