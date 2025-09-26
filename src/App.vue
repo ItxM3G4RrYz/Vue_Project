@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg bg-dark border-bottom border-body" data-bs-theme="dark">
+  <nav class="navbar navbar-expand-lg bg-black border-bottom border-body" data-bs-theme="dark">
   <div class="container">
     <a class="navbar-brand" href="/">Home</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,9 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/customers">Customer</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/student">Student</a>
         </li>
                 <li class="nav-item">
           <a class="nav-link" href="/product">Product</a>

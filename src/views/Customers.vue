@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-4">
     <h2 class="mb-3">Customers List</h2>
-    
+
     <div class="mb-3">
       <a class="btn btn-primary" href="/add_customer" role="button">Add+</a>
     </div>
@@ -15,6 +15,7 @@
           <th>lastName</th>
           <th>Phone.</th>
           <th>UserName</th>
+          <th class="text-center">Delete User</th>
         </tr>
       </thead>
       <tbody>
@@ -24,6 +25,10 @@
           <td>{{ customer.lastName }}</td>
           <td>{{ customer.phone }}</td>
           <td>{{ customer.username }}</td>
+          <td class="text-center">
+            <button class="btn btn-danger btn-sm" @click="deleteCustomer(customer.customer_id)">Delete</button>
+          </td>
+
         </tr>
       </tbody>
     </table>
@@ -61,7 +66,7 @@ export default {
         });
 
         if (!response.ok) {
-          throw new Error("ไม่สามารถดึงข้อมูลได้");
+          throw new Error("Cannot fetch data from server");
         }
 
         const result = await response.json();
@@ -81,13 +86,40 @@ export default {
     onMounted(() => {
       fetchCustomers();
     });
+    const deleteCustomer = async (id) => {
+      if (!confirm("Do you want to deleted this data?")) return;
+
+      try {
+        const response = await fetch("http://localhost/67713669/api_php/api_customer.php", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ customer_id: id })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // ลบออกจาก customers ทันที (ไม่ต้องโหลดใหม่)
+          customers.value = customers.value.filter(c => c.customer_id !== id);
+          alert(result.message);
+        } else {
+          alert(result.message);
+        }
+
+      } catch (err) {
+        alert("Something went wrong.: " + err.message);
+      }
+    };
+
 
     return {
       customers,
       loading,
+      deleteCustomer,
       error
     };
   }
 };
 </script>
-
