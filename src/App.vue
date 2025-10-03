@@ -20,14 +20,21 @@
         <li class="nav-item">
           <a class="nav-link" href="/showproduct">Show Product</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/customers">Customer</a>
+      <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Customer
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/customers">Customer</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/customer_edit">Edit Customer</a></li>
+          </ul>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/student">Student</a>
         </li>
                 <li class="nav-item">
-          <a class="nav-link" href="/product">Product</a>
+          <a class="nav-link" href="/product_edit">Product</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/about">About</a>
