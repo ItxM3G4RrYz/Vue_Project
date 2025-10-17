@@ -36,6 +36,9 @@
                 <li class="nav-item">
           <a class="nav-link" href="/product_edit">Product</a>
         </li>
+                <li class="nav-item">
+          <a class="nav-link" href="/employee">Employee</a>
+        </li>
         <li class="nav-item">
           <a class="nav-link" href="/about">About</a>
         </li>

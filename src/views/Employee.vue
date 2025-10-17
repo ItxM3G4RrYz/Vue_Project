@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-4">
-    <h2 class="mb-3">Customer List</h2>
+    <h2 class="mb-3">Our Employee</h2>
 
     <div class="mb-3">
       <button class="btn btn-primary" @click="openAddModal">
@@ -15,7 +15,8 @@
           <th>Name</th>
           <th>LastName</th>
           <th>Phone.</th>
-          <th>Username</th>
+          <th>Salary</th>
+          <th>TimeWent</th>
           <th class="text-center">Edit/Delete
 
           </th>
@@ -23,17 +24,18 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="customer in customers" :key="customer.customer_id">
-          <td>{{ customer.customer_id }}</td>
-          <td>{{ customer.firstName }}</td>
-          <td>{{ customer.lastName }}</td>
-          <td>{{ customer.phone }}</td>
-          <td>{{ customer.username }}</td>
-          <td>
-            <button class="btn btn-warning btn-sm" @click="openEditModal(customer)"><i
+        <tr v-for="employee in employees" :key="employee.emp_id">
+          <td>{{ employee.emp_id }}</td>
+          <td>{{ employee.firstname }}</td>
+          <td>{{ employee.lastname }}</td>
+          <td>{{ employee.phone }}</td>
+          <td>{{ employee.salary }}</td>
+          <td>{{ employee.timewent }}</td>
+          <td class="text-center">
+            <button class="btn btn-warning btn-sm" @click="openEditModal(employee)"><i
                 class="fa-solid fa-pen-to-square"></i></button> |
             <!-- ปุ่มลบ -->
-            <button class="btn btn-danger btn-sm" @click="deleteCustomer(customer.customer_id)"><i
+            <button class="btn btn-danger btn-sm" @click="deleteEmployee(employee.emp_id)"><i
                 class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
@@ -50,34 +52,34 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{ isEditMode ? "Edit Customer" : "Add Customer" }}</h5>
+            <h5 class="modal-title">{{ isEditMode ? "Edit Employee" : "Add Employee" }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="saveCustomer">
+            <form @submit.prevent="saveEmployee">
               <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input v-model="editCustomer.firstName" type="text" class="form-control" required>
+                <label class="form-label">firstName</label>
+                <input v-model="editEmployee.firstname" type="text" class="form-control" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">Surname</label>
-                <input v-model="editCustomer.lastName" type="text" class="form-control" required>
+                <label class="form-label">LastName</label>
+                <input v-model="editEmployee.lastname" type="text" class="form-control" required>
               </div>
               <div class="mb-3">
                 <label class="form-label">Phone.</label>
-                <input v-model="editCustomer.phone" type="text" class="form-control" required>
+                <input v-model="editEmployee.phone" type="number" class="form-control" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input v-model="editCustomer.username" type="text" class="form-control" required>
+                <label class="form-label">Salary</label>
+                <input v-model="editEmployee.salary" type="number" class="form-control" required>
               </div>
               <div class="mb-3">
                 <label class="form-label">Password</label>
-                <input v-model="editCustomer.password" type="password" class="form-control" :required="!isEditMode"
-                  placeholder="กรอกเฉพาะเมื่อเพิ่มใหม่หรือเปลี่ยนรหัสผ่าน">
+                <input v-model="editEmployee.password" type="password" class="form-control" :required="!isEditMode"
+                  placeholder="Fill when change password or add new user">
               </div>
               <button type="submit" class="btn btn-success">
-                {{ isEditMode ? "Saved" : "Add Customer" }}
+                {{ isEditMode ? "Saved" : "Add Employee" }}
               </button>
             </form>
           </div>
@@ -92,22 +94,22 @@
 import { ref, onMounted } from "vue";
 
 export default {
-  name: "CustomerList",
+  name: "EmployeeList",
   setup() {
-    const customers = ref([]);
+    const employees = ref([]);
     const loading = ref(true);
     const error = ref(null);
-    const editCustomer = ref({});
+    const editEmployee = ref({});
     const isEditMode = ref(false);
     let editModal = null;
 
-    const fetchCustomers = async () => {
+    const fetchEmployees = async () => {
       try {
-        const response = await fetch("http://localhost/67713669/api_php/api_customer.php");
+        const response = await fetch("http://localhost/67713669/api_php/api_employee.php");
         const result = await response.json();
 
         if (result.success) {
-          customers.value = result.data;
+          employees.value = result.data;
         } else {
           error.value = result.message;
         }
@@ -119,7 +121,7 @@ export default {
     };
 
     onMounted(() => {
-      fetchCustomers();
+      fetchEmployees();
       const modalEl = document.getElementById("editModal");
       editModal = new window.bootstrap.Modal(modalEl);
     });
@@ -127,40 +129,40 @@ export default {
     // ✅ เปิด Modal เพิ่มลูกค้าใหม่
     const openAddModal = () => {
       isEditMode.value = false;
-      editCustomer.value = {
-        firstName: "",
-        lastName: "",
+      editEmployee.value = {
+        firstname: "",
+        lastname: "",
         phone: "",
-        username: "",
+        salary: "",
         password: ""
       };
       editModal.show();
     };
 
     // ✅ เปิด Modal แก้ไขลูกค้า
-    const openEditModal = (customer) => {
+    const openEditModal = (employee) => {
       isEditMode.value = true;
-      editCustomer.value = { ...customer, password: "" };
+      editEmployee.value = { ...employee, password: "" };
       editModal.show();
     };
 
     // ✅ ใช้ฟังก์ชันเดียวสำหรับทั้งเพิ่ม/แก้ไข
-    const saveCustomer = async () => {
-      const url = "http://localhost/67713669/api_php/api_customer.php";
+    const saveEmployee = async () => {
+      const url = "http://localhost/67713669/api_php/api_employee.php";
       const method = isEditMode.value ? "PUT" : "POST";
 
       try {
         const response = await fetch(url, {
           method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editCustomer.value)
+          body: JSON.stringify(editEmployee.value)
         });
 
         const result = await response.json();
 
         if (result.success) {
           alert(result.message);
-          fetchCustomers();
+          fetchEmployees();
           editModal.hide();
         } else {
           alert(result.message);
@@ -171,17 +173,17 @@ export default {
     };
 
     // ✅ ลบลูกค้า
-    const deleteCustomer = async (id) => {
+    const deleteEmployee = async (id) => {
       if (!confirm("Do you want to Delete this data?")) return;
       try {
-        const response = await fetch("http://localhost/67713669/api_php/api_customer.php", {
+        const response = await fetch("http://localhost/67713669/api_php/api_employee.php", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customer_id: id })
+          body: JSON.stringify({ emp_id: id })
         });
         const result = await response.json();
         if (result.success) {
-          customers.value = customers.value.filter(c => c.customer_id !== id);
+          employees.value = employees.value.filter(c => c.emp_id !== id);
           alert(result.message);
         } else {
           alert(result.message);
@@ -192,15 +194,15 @@ export default {
     };
 
     return {
-      customers,
+      employees,
       loading,
       error,
-      editCustomer,
+      editEmployee,
       isEditMode,
       openAddModal,
       openEditModal,
-      saveCustomer,
-      deleteCustomer
+      saveEmployee,
+      deleteEmployee
     };
   }
 };
