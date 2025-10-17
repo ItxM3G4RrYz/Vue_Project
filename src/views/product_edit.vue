@@ -1,21 +1,21 @@
 <template>
   <div class="container mt-4">
     <h2 class="mb-3">Product List</h2>
-    
-    <div class="mb-3">
-      <a class="btn btn-primary" href="/add_product" role="button">Add+</a>
+
+   <div class="mb-3">
+      <button class="btn btn-primary" @click="openAddModal">Add+</button>
     </div>
 
     <table class="table table-bordered table-striped">
       <thead class="table-primary">
         <tr>
           <th>ID</th>
-          <th>Product Name</th>
+          <th>ProductName</th>
           <th>Details</th>
           <th>Price</th>
-          <th>Amount</th>
+          <th>Summary</th>
           <th>Picture</th>
-          <th class="text-center">Manage</th>
+          <th>Manage</th>
         </tr>
       </thead>
       <tbody>
@@ -26,11 +26,19 @@
           <td>{{ product.price }}</td>
           <td>{{ product.stock }}</td>
           <td>
-            <img :src="'http://localhost/67713669/api_php/uploads/' + product.image" width="100" class=""  />
+            <img
+              v-if="product.image"
+              :src="'http://localhost/67713669/api_php/uploads/' + product.image"
+              width="100"
+            />
           </td>
-          <td class="text-center">
-            <button class="btn btn-warning btn-sm me-2" @click="openEditModal(product)"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button class="btn btn-danger btn-sm" @click="deleteProduct(product.product_id)"><i class="fa-solid fa-trash"></i></button>
+          <td>
+            <button class="btn btn-warning btn-sm me-2" @click="openEditModal(product)">
+              Edit
+            </button>
+            <button class="btn btn-danger btn-sm" @click="deleteProduct(product.product_id)">
+              Delete
+            </button>
           </td>
         </tr>
       </tbody>
@@ -39,16 +47,16 @@
     <div v-if="loading" class="text-center"><p>Loading...</p></div>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
-    <!-- Modal แก้ไขสินค้า -->
+    <!-- Modal ใช้ทั้งเพิ่ม / แก้ไข -->
     <div class="modal fade" id="editModal" tabindex="-1">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-md">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">EditProduct</h5>
+            <h5 class="modal-title">{{ isEditMode ? "Edit Product" : "Add Product" }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="updateProduct">
+            <form @submit.prevent="saveProduct">
               <div class="mb-3">
                 <label class="form-label">ProductName</label>
                 <input v-model="editForm.product_name" type="text" class="form-control" required />
@@ -62,18 +70,35 @@
                 <input v-model="editForm.price" type="number" step="0.01" class="form-control" required />
               </div>
               <div class="mb-3">
-                <label class="form-label">Amount</label>
+                <label class="form-label">Summary</label>
                 <input v-model="editForm.stock" type="number" class="form-control" required />
               </div>
               <div class="mb-3">
-                <label class="form-label">Choose Picture</label>
-                <input type="file" @change="handleFileUpload" class="form-control" />
-                <div v-if="editForm.image">
-                  <p class="mt-2">Picture:</p>
-                  <img :src="'http://localhost/67713669/api_php/uploads/' + editForm.image" width="100" />
-                </div>
-              </div>
-              <button type="submit" class="btn btn-success">Save</button>
+  <label class="form-label">Picture</label>
+  <!-- ✅ required เฉพาะตอนเพิ่มสินค้า -->
+  <input
+    type="file"
+    @change="handleFileUpload"
+    class="form-control"
+    :required="!isEditMode"
+  />
+
+  <!-- แสดงรูปเดิมเฉพาะตอนแก้ไข -->
+  <div v-if="isEditMode && editForm.image">
+    <p class="mt-2">รูปเดิม:</p>
+    <img
+      :src="'http://localhost/67713669/api_php/uploads/' + editForm.image"
+      width="100"
+    />
+  </div>
+</div>
+
+
+
+
+              <button type="submit" class="btn btn-success">
+                {{ isEditMode ? "Edit Saved" : "New Edit" }}
+              </button>
             </form>
           </div>
         </div>
@@ -84,7 +109,6 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import { Modal } from "bootstrap";
 
 export default {
   name: "ProductList",
@@ -92,7 +116,7 @@ export default {
     const products = ref([]);
     const loading = ref(true);
     const error = ref(null);
-
+    const isEditMode = ref(false); // ✅ เช็คโหมด
     const editForm = ref({
       product_id: null,
       product_name: "",
@@ -104,6 +128,7 @@ export default {
     const newImageFile = ref(null);
     let modalInstance = null;
 
+    // โหลดข้อมูลสินค้า
     const fetchProducts = async () => {
       try {
         const res = await fetch("http://localhost/67713669/api_php/api_product.php");
@@ -116,11 +141,35 @@ export default {
       }
     };
 
+    // เปิด Modal สำหรับเพิ่มสินค้า
+const openAddModal = () => {
+  isEditMode.value = false;
+  editForm.value = {
+    product_id: null,
+    product_name: "",
+    description: "",
+    price: "",
+    stock: "",
+    image: ""
+  };
+  newImageFile.value = null;
+      
+  const modalEl = document.getElementById("editModal");
+  modalInstance = new window.bootstrap.Modal(modalEl);
+  modalInstance.show();
+
+  // ✅ รีเซ็ตค่า input file ให้ไม่แสดงชื่อไฟล์ค้าง
+  const fileInput = modalEl.querySelector('input[type="file"]');
+  if (fileInput) fileInput.value = "";
+ };
+
+    // เปิด Modal สำหรับแก้ไขสินค้า
     const openEditModal = (product) => {
+      isEditMode.value = true;
       editForm.value = { ...product };
       newImageFile.value = null;
       const modalEl = document.getElementById("editModal");
-      modalInstance = new Modal(modalEl);
+      modalInstance = new window.bootstrap.Modal(modalEl);
       modalInstance.show();
     };
 
@@ -128,17 +177,16 @@ export default {
       newImageFile.value = event.target.files[0];
     };
 
-    const updateProduct = async () => {
+    // ✅ ใช้ฟังก์ชันเดียวในการเพิ่ม / แก้ไข
+    const saveProduct = async () => {
       const formData = new FormData();
-      formData.append("action", "update");
-      formData.append("product_id", editForm.value.product_id);
+      formData.append("action", isEditMode.value ? "update" : "add");
+      if (isEditMode.value) formData.append("product_id", editForm.value.product_id);
       formData.append("product_name", editForm.value.product_name);
       formData.append("description", editForm.value.description);
       formData.append("price", editForm.value.price);
       formData.append("stock", editForm.value.stock);
-      if (newImageFile.value) {
-        formData.append("image", newImageFile.value);
-      }
+      if (newImageFile.value) formData.append("image", newImageFile.value);
 
       try {
         const res = await fetch("http://localhost/67713669/api_php/api_product.php", {
@@ -158,6 +206,7 @@ export default {
       }
     };
 
+    // ลบสินค้า
     const deleteProduct = async (id) => {
       if (!confirm("Are you sure to delete this product?")) return;
 
@@ -173,7 +222,7 @@ export default {
         const result = await res.json();
         if (result.message) {
           alert(result.message);
-          products.value = products.value.filter(p => p.product_id !== id);
+          products.value = products.value.filter((p) => p.product_id !== id);
         } else if (result.error) {
           alert(result.error);
         }
@@ -189,9 +238,11 @@ export default {
       loading,
       error,
       editForm,
+      isEditMode,
+      openAddModal,
       openEditModal,
       handleFileUpload,
-      updateProduct,
+      saveProduct,
       deleteProduct
     };
   }

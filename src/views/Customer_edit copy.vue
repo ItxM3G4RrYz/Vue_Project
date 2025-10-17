@@ -29,7 +29,7 @@
           <td>{{ customer.lastName }}</td>
           <td>{{ customer.phone }}</td>
           <td>{{ customer.username }}</td>
-          <td class="text-center">
+          <td>
             <button class="btn btn-warning btn-sm" @click="openEditModal(customer)"><i
                 class="fa-solid fa-pen-to-square"></i></button> |
             <!-- ปุ่มลบ -->
@@ -74,7 +74,7 @@
               <div class="mb-3">
                 <label class="form-label">Password</label>
                 <input v-model="editCustomer.password" type="password" class="form-control" :required="!isEditMode"
-                  placeholder="Fill when change password or add new user">
+                  placeholder="กรอกเฉพาะเมื่อเพิ่มใหม่หรือเปลี่ยนรหัสผ่าน">
               </div>
               <button type="submit" class="btn btn-success">
                 {{ isEditMode ? "Saved" : "Add Customer" }}
