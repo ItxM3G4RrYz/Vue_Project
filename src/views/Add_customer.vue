@@ -1,25 +1,25 @@
 <template>
-  <div class="container mt-4 col-md-4 bg-body-secondary ">
-    <h2 class="text-center mb-3">Sign In</h2>
+  <div class="container mt-4 col-md-4 bg-body-secondary">
+    <h2 class="text-center mb-3">ลงทะเบียน</h2>
     <form @submit.prevent="addCustomer">
       <div class="mb-2">
-        <input v-model="customer.firstName" class="form-control" placeholder="Firstname" required />
+        <input v-model="customer.firstName" class="form-control" placeholder="ชื่อ" required />
       </div>
       <div class="mb-2">
-        <input v-model="customer.lastName" class="form-control" placeholder="Lastname" required />
+        <input v-model="customer.lastName" class="form-control" placeholder="นามสกุล" required />
       </div>
       <div class="mb-2">
-        <input v-model="customer.phone" class="form-control" placeholder="Phone" required />
+        <input v-model="customer.phone" class="form-control" placeholder="เบอร์โทร" required />
       </div>
       <div class="mb-2">
-        <input v-model="customer.username" class="form-control" placeholder="Username" required />
+        <input v-model="customer.username" class="form-control" placeholder="ชื่อผู้ใช้" required />
       </div>
       <div class="mb-2">
-        <input type="password" v-model="customer.password" class="form-control" placeholder="Password" required />
+        <input type="password" v-model="customer.password" class="form-control" placeholder="รหัสผ่าน" required />
       </div>
       <div class="text-center mt-4 ">
-      <button type="submit" class="btn btn-primary mb-4">Submit</button> &nbsp;
-      <button type="reset" class="btn btn-secondary mb-4">Cancel</button>
+      <button type="submit" class="btn btn-primary mb-4">บันทึก</button> &nbsp;
+      <button type="reset" class="btn btn-secondary mb-4">ยกเลิก</button>
       </div>
     </form>
 
@@ -61,7 +61,7 @@ export default {
         }
 
       } catch (err) {
-        this.message = "Something went wrong: " + err.message;
+        this.message = "เกิดข้อผิดพลาด: " + err.message;
       }
     }
   }

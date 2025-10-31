@@ -1,132 +1,153 @@
 <?php
-
+// ส่งออกข้อมูลเป็น JSON
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST");
 
 // เชื่อมต่อฐานข้อมูล
 include 'condb.php';
 
-try {
-    $method = $_SERVER['REQUEST_METHOD'];
+// รับ action จาก POST
+$action = $_POST['action'] ?? null;
 
-    if ($method === "GET") {
-        // ✅ ดึงข้อมูลลูกค้าทั้งหมด
-        $stmt = $conn->prepare("SELECT emp_id, firstname, lastname, phone, salary, timewent FROM employees ORDER BY emp_id ASC");
-        $stmt->execute();
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action) {
+    switch ($action) {
 
-        echo json_encode(["success" => true, "data" => $result]);
-        exit;
+        /* ==============================
+           🟩 เพิ่มพนักงานใหม่
+        ============================== */
+        case 'add':
+            $firstname = $_POST['firstname'] ?? '';
+            $lastname  = $_POST['lastname'] ?? '';
+            $username  = $_POST['username'] ?? '';
+            $password  = $_POST['password'] ?? '';
+
+            if (empty($firstname) || empty($lastname) || empty($username) || empty($password)) {
+                echo json_encode(["error" => "ข้อมูลไม่ครบถ้วน"]);
+                exit;
+            }
+
+            // อัพโหลดรูป
+            $filename = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+                $targetDir = "uploads/";
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+                $filename = time() . '_' . basename($_FILES['image']['name']);
+                $targetFile = $targetDir . $filename;
+                move_uploaded_file($_FILES['image']['tmp_name'], $targetFile);
+            }
+
+            $sql = "INSERT INTO employee (firstname, lastname, username, password, image)
+                    VALUES (:firstname, :lastname, :username, :password, :image)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':firstname', $firstname);
+            $stmt->bindParam(':lastname', $lastname);
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':password', $password);
+            $stmt->bindParam(':image', $filename);
+
+            if ($stmt->execute()) {
+                echo json_encode(["message" => "เพิ่มพนักงานสำเร็จ"]);
+            } else {
+                echo json_encode(["error" => "เพิ่มพนักงานล้มเหลว"]);
+            }
+            break;
+
+
+        /* ==============================
+           🟨 แก้ไขข้อมูลพนักงาน
+        ============================== */
+        case 'update':
+            $employee_id = $_POST['employee_id'] ?? null;
+            $firstname   = $_POST['firstname'] ?? '';
+            $lastname    = $_POST['lastname'] ?? '';
+            $username    = $_POST['username'] ?? '';
+            $password    = $_POST['password'] ?? '';
+
+            if (empty($employee_id) || empty($firstname) || empty($lastname) || empty($username)) {
+                echo json_encode(["error" => "ข้อมูลไม่ครบถ้วน"]);
+                exit;
+            }
+
+            // ตรวจสอบรูปภาพใหม่
+            $imageSQL = "";
+            $filename = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+                $targetDir = "uploads/";
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0777, true);
+                }
+                $filename = time() . '_' . basename($_FILES['image']['name']);
+                $targetFile = $targetDir . $filename;
+                move_uploaded_file($_FILES['image']['tmp_name'], $targetFile);
+                $imageSQL = ", image = :image";
+            }
+
+            // ✅ แก้ไข SQL ให้ถูกต้อง (มี , ระหว่าง username และ password)
+            $sql = "UPDATE employee SET 
+                        firstname = :firstname,
+                        lastname = :lastname,
+                        username = :username,
+                        password = :password
+                        $imageSQL
+                    WHERE employee_id = :employee_id";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':firstname', $firstname);
+            $stmt->bindParam(':lastname', $lastname);
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':password', $password);
+            $stmt->bindParam(':employee_id', $employee_id);
+
+            if ($filename) {
+                $stmt->bindParam(':image', $filename);
+            }
+
+            if ($stmt->execute()) {
+                echo json_encode(["message" => "แก้ไขพนักงานสำเร็จ"]);
+            } else {
+                echo json_encode(["error" => "แก้ไขพนักงานล้มเหลว"]);
+            }
+            break;
+
+
+        /* ==============================
+           🟥 ลบพนักงาน
+        ============================== */
+        case 'delete':
+            $employee_id = $_POST['employee_id'] ?? null;
+            if (empty($employee_id)) {
+                echo json_encode(["error" => "รหัสพนักงานไม่ถูกต้อง"]);
+                exit;
+            }
+
+            $stmt = $conn->prepare("DELETE FROM employee WHERE employee_id = :employee_id");
+            $stmt->bindParam(':employee_id', $employee_id);
+
+            if ($stmt->execute()) {
+                echo json_encode(["message" => "ลบพนักงานสำเร็จ"]);
+            } else {
+                echo json_encode(["error" => "ลบพนักงานล้มเหลว"]);
+            }
+            break;
+
+        default:
+            echo json_encode(["error" => "Action ไม่ถูกต้อง"]);
+            break;
     }
 
-    elseif ($method === "POST") {
-        // ✅ เพิ่มพนักงานใหม่
-        $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data) {
-            echo json_encode(["success" => false, "message" => "Invalid JSON body"]);
-            exit;
-        }
-
-        // Validate required fields (adjust names to match frontend: firstname, lastname, phone, salary)
-        if (empty($data['firstname']) || empty($data['lastname']) || empty($data['phone']) || !isset($data['salary'])) {
-            echo json_encode(["success" => false, "message" => "Please provide firstname, lastname, phone and salary"]);
-            exit;
-        }
-
-        $firstname = $data['firstname'];
-        $lastname = $data['lastname'];
-        $phone = $data['phone'];
-        $salary = $data['salary'];
-        $timewent = isset($data['timewent']) ? $data['timewent'] : date('Y-m-d H:i:s');
-
-        $stmt = $conn->prepare("INSERT INTO employees (firstname, lastname, phone, salary, timewent) VALUES (:firstname, :lastname, :phone, :salary, :timewent)");
-        $stmt->bindParam(':firstname', $firstname);
-        $stmt->bindParam(':lastname', $lastname);
-        $stmt->bindParam(':phone', $phone);
-        $stmt->bindParam(':salary', $salary);
-        $stmt->bindParam(':timewent', $timewent);
-
-        if ($stmt->execute()) {
-            $id = $conn->lastInsertId();
-            echo json_encode(["success" => true, "message" => "Employee added", "emp_id" => $id]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Failed to add employee"]);
-        }
-        exit;
+} else {
+    /* ==============================
+       🟦 ดึงข้อมูลพนักงานทั้งหมด (GET)
+    ============================== */
+    $stmt = $conn->prepare("SELECT * FROM employee ORDER BY employee_id ASC");
+    if ($stmt->execute()) {
+        $employee = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(["success" => true, "data" => $employee]);
+    } else {
+        echo json_encode(["success" => false, "data" => []]);
     }
-
-    elseif ($method === "PUT") {
-        // ✅ อัปเดตข้อมูลพนักงาน
-        $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data || !isset($data['emp_id'])) {
-            echo json_encode(["success" => false, "message" => "emp_id is required"]);
-            exit;
-        }
-
-        $emp_id = intval($data['emp_id']);
-        // Accept updating these fields (adjust as needed)
-        $firstname = isset($data['firstname']) ? $data['firstname'] : null;
-        $lastname = isset($data['lastname']) ? $data['lastname'] : null;
-        $phone = isset($data['phone']) ? $data['phone'] : null;
-        $salary = isset($data['salary']) ? $data['salary'] : null;
-
-        // Build dynamic SET clause
-        $fields = [];
-        $params = [':id' => $emp_id];
-        if ($firstname !== null) { $fields[] = "firstname = :firstname"; $params[':firstname'] = $firstname; }
-        if ($lastname !== null)  { $fields[] = "lastname = :lastname";   $params[':lastname']  = $lastname;  }
-        if ($phone !== null)     { $fields[] = "phone = :phone";         $params[':phone']     = $phone;     }
-        if ($salary !== null)    { $fields[] = "salary = :salary";       $params[':salary']    = $salary;    }
-
-        if (empty($fields)) {
-            echo json_encode(["success" => false, "message" => "No fields to update"]);
-            exit;
-        }
-
-        $sql = "UPDATE employees SET " . implode(", ", $fields) . " WHERE emp_id = :id";
-        $stmt = $conn->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v);
-        }
-
-        if ($stmt->execute()) {
-            echo json_encode(["success" => true, "message" => "Employee updated"]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Failed to update employee"]);
-        }
-        exit;
-    }
-
-    elseif ($method === "DELETE") {
-        // ✅ ลบข้อมูลลูกค้าตาม 
-        $data = json_decode(file_get_contents("php://input"), true);
-
-        if (!isset($data["emp_id"])) {
-            echo json_encode(["success" => false, "message" => "can't find employee_id"]);
-            exit;
-        }
-
-        $emp_id = intval($data["emp_id"]);
-
-        $stmt = $conn->prepare("DELETE FROM employees WHERE emp_id = :id");
-        $stmt->bindParam(":id", $emp_id, PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
-            echo json_encode(["success" => true, "message" => "Delete Successfully"]);
-        } else {
-            echo json_encode(["success" => false, "message" => "can't delete the data"]);
-        }
-        exit;
-    }
-
-    else {
-        echo json_encode(["success" => false, "message" => "Method not allowed"]);
-        exit;
-    }
-
-} catch (Exception $e) {
-    echo json_encode(["success" => false, "message" => $e->getMessage()]);
 }
 ?>

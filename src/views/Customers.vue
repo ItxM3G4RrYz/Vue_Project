@@ -1,21 +1,20 @@
-<template>
-  <div class="container mt-4">
-    <h2 class="mb-3">Customers List</h2>
-
+<template lang="">
+    <div class="container mt-4">
+    <h2 class="mb-3">รายชื่อลูกค้า</h2>
+    
     <div class="mb-3">
       <a class="btn btn-primary" href="/add_customer" role="button">Add+</a>
     </div>
 
-    <!-- ตารางแสดงข้อมูลลูกค้า -->
     <table class="table table-bordered table-striped">
       <thead class="table-primary">
         <tr>
           <th>ID</th>
-          <th>FirstName</th>
-          <th>lastName</th>
-          <th>Phone.</th>
-          <th>UserName</th>
-          <th class="text-center">Delete User</th>
+          <th>ชื่อ</th>
+          <th>นามสกุล</th>
+          <th>เบอร์โทร</th>
+          <th>ชื่อผู้ใช้</th>
+          <th>ลบ</th>
         </tr>
       </thead>
       <tbody>
@@ -25,17 +24,16 @@
           <td>{{ customer.lastName }}</td>
           <td>{{ customer.phone }}</td>
           <td>{{ customer.username }}</td>
-          <td class="text-center">
-            <button class="btn btn-danger btn-sm" @click="deleteCustomer(customer.customer_id)">Delete</button>
-          </td>
-
+          <td>  
+  <button class="btn btn-danger btn-sm" @click="deleteCustomer(customer.customer_id)">ลบ</button>
+</td>
         </tr>
       </tbody>
     </table>
 
     <!-- Loading -->
     <div v-if="loading" class="text-center">
-      <p>loading data...</p>
+      <p>กำลังโหลดข้อมูล...</p>
     </div>
 
     <!-- Error -->
@@ -44,7 +42,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import { ref, onMounted } from "vue";
 
@@ -58,7 +55,7 @@ export default {
     // ฟังก์ชันดึงข้อมูลจาก API ด้วย GET
     const fetchCustomers = async () => {
       try {
-        const response = await fetch("http://localhost/67713669/api_php/show_customers.php", {
+        const response = await fetch("http://localhost/project_67711727/api_php/show_customer.php", {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
@@ -66,7 +63,7 @@ export default {
         });
 
         if (!response.ok) {
-          throw new Error("Cannot fetch data from server");
+          throw new Error("ไม่สามารถดึงข้อมูลได้");
         }
 
         const result = await response.json();
@@ -86,33 +83,34 @@ export default {
     onMounted(() => {
       fetchCustomers();
     });
-    const deleteCustomer = async (id) => {
-      if (!confirm("Do you want to deleted this data?")) return;
 
-      try {
-        const response = await fetch("http://localhost/67713669/api_php/api_customer.php", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ customer_id: id })
-        });
+    //ฟังก์ชั่นการลบข้อมูล ***
+const deleteCustomer = async (id) => {
+  if (!confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) return;
 
-        const result = await response.json();
+  try {
+    const response = await fetch("http://localhost/project_67711727/api_php/api_customer.php", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ customer_id: id })
+    });
 
-        if (result.success) {
-          // ลบออกจาก customers ทันที (ไม่ต้องโหลดใหม่)
-          customers.value = customers.value.filter(c => c.customer_id !== id);
-          alert(result.message);
-        } else {
-          alert(result.message);
-        }
+    const result = await response.json();
 
-      } catch (err) {
-        alert("Something went wrong.: " + err.message);
-      }
-    };
+    if (result.success) {
+      // ลบออกจาก customers ทันที (ไม่ต้องโหลดใหม่)
+      customers.value = customers.value.filter(c => c.customer_id !== id);
+      alert(result.message);
+    } else {
+      alert(result.message);
+    }
 
+  } catch (err) {
+    alert("เกิดข้อผิดพลาด: " + err.message);
+  }
+};
 
     return {
       customers,
@@ -123,3 +121,6 @@ export default {
   }
 };
 </script>
+<style lang="">
+    
+</style>
